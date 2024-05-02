@@ -1,0 +1,168 @@
+VERSIONE 1.0
+
+Programma di stampa etichette ( relazione )
+
+Questo progetto aveva come obbiettivo quello di leggere dei Record da un file excel ( .csv ) e scriverli in un file di ouput testo ( .txt ), 
+inizialmente questo progetto era composto da un solo file Program.cs che conteneva in esso le classi Program Record, Arguments e Label, l'insieme 
+di queste classi aveva il compito di leggere, scrivere e stampare le etichette, in particolare ecco l'obbiettivo di ogni classe:
+
+Program
+
+Record-> La classe Record ha il compito di opsitare i parametri delle etichette contenute nel file excel, 
+		 questa classe viene usata da CSVHelper, infatti tramite il metodo .getRecords<Record>() si possono
+		 ottenere tutte le etichette contenute nel file .csv
+
+Label->  Questa classe ha il compito stampare le etichette sia in un file di testo 												
+         ( OutputAssetLabel_2020-2021-2022.txt ) che nella stampante ( PCM43c ), in particolare il 	
+	 		metodo che si occupa di stampare le etichette si chiama .stampaEtichette("*parametri*"),  il metodo
+			ha come parametri Arguments, SteamWriter e List<Record>:
+	 		- Arguments args : questa classe contiene tutti i parametri inseriti da console ( ip, input, output, rep,
+			anno ) i valori degli argomenti sono ottenuti tramite il metodo getValue(string)
+	 		- StreamWriter writer : Classe del sistema, ha il compito di stampare delle stringhe in un file di test
+	 		- List<Record> dati :  Lista di Record, questa lista contiene ogni record del file csv che devono essere
+			stampati nella stampante/file di testo
+	
+
+Arguments-> Questa classe è una classe che ha il compito di ottenere gli argomenti inseriti da console. In 					
+particolare questa classe ha come parametro un dizionario che abbina 	    una chiave ad un valore 				
+( assegnate tramite un for(int i = 0; i < args.Lenght - 1; i++)  ) ad esempio alla chiave "-IP" viene 				
+assegnato il valore " 172.20.137.142"    	    per ottenere il valore abbinato ad una chiave usiamo il 				
+metodo getValue(string), questo metodo richede la stringa ossia il nome del parametro e di 						
+conseguenza ne ricava il valore. Ogni argomento considerato chiave " quello col -" viene 						
+trasformato in Maiuscolo grazie al metodo ToUpperCase(string).
+
+Questa classe è una classe che ha il compito di ottenere gli argomenti inseriti da console. In particolare questa classe ha come parametro un dizionario che abbina una chiave ad un valore 				
+( assegnate tramite un for(int i = 0; i < args.Lenght - 1; i++)  ) ad esempio alla chiave "-IP" viene 	assegnato il valore " 172.20.137.142"    	   
+per ottenere il valore abbinato ad una chiave usiamo il metodo getValue(string), questo metodo richede la stringa ossia il nome del parametro e di conseguenza ne ricava il valore. 
+Ogni argomento considerato chiave " quello col -" viene trasformato in Maiuscolo grazie al metodo ToUpperCase(string).
+
+
+I requisiti odierni di questo progetto sono:
+
+- Essere in grado di decidere di stampare un certo reparto e/o un certo anno tramite parametri inseriti da console | Fatto
+- Dividere il progetto in un file dedicato per ogni classe | Fatto
+- Verificare se la stampante sia irraggiungibile o spenta | Fatto
+- Non usare la libreria EasyTelnet | Fatto 
+- Stampare le etichette nel formato corretto | Fatto
+- Usare blocchi try cathc per intercettare le Eccezzioni | Fatto
+- Rimuovere l'uso di Envirorment.CurrentDirectory optando per l'uso di argomenti inseriti dalla console | Fatto
+- Rimuovere l'uso di DNS.getHostEntry(string nomeStampante) | Fatto
+
+Nella classe program per leggere le etichette dal file .csv utilizziamo la classe CSVHelper ( aggiunta con il 
+comando da terminale “dotnet add package CSVHelper -version 30”) questa classe permette di leggere i dati di un Excel in modo semplice, 
+l’unica cosa che dobbiamo fare per creare un CsvReader è creare un oggetto di tipo CsvReader e passargli uno StreamReader e una configurazione 
+( nel mio caso la configurazione definisce il tipo di separatore “;”, se L’Excel contenga dei commenti o meno “false”)
+
+
+Nella classe Program usiamo blocchi try catch per gestire le eccezioni, le eccezioni gestite sono:
+- System.IO.IOException : Eccezione di input output gestita nel caso in cui le directory immesse come argomento nel terminale non siano trovare o esistenti.
+- Exception : Classe Generale delle eccezioni ( ogni eccezioni deriva da questa classe ): In questo caso io uso questa eccezione per gestire il caso in cui l’ip non venga trovato o sia immesso non correttamente ( ad esempio se metto come argomento la chiave “-ip” e il valore “Ciao” il programma andrà in errore
+
+VERSIONE 2.0
+
+Progetto Asset Label iniziato il 28-08-2023
+
+Il progetto GitHub AssetLabel ha come obbiettivo quello di prendere da un file Excel ( .csv )  dei codici chiamati Record leggerli tutti grazie alla classe CsvReader e stamparli in un file di output in
+formato testo ( .txt ), inoltre il progetto ha come obbiettivo quello di stampare le etichette anche in una stampante fisica ( PCM43c ), la stampa avviene usando l'oggetto Socket ( System.Net.Sockets ),
+questo oggetto per essere creato richede come parametri una AddressFamily.InterNetwork ), un SocketType-Stream ( Flusso ) e il ProtocolType.TCP , successivamente per stabilire la connessione alla 
+stampante PCM43c viene usato il metodo Connect di Socket che richete una stringa ( ip ) e un intero ( porta ), infine per stampare le etichette utilizziamo il metodo Send che richede come parametro
+un byte[], l''array di byte viene creato usando il metodo Encoding.ASCII.GetBytes(string) che codifica un stringa in ASCII e ne ricava un array di byte.
+
+Il progetto inizialmente era composto da un solo file chiamato Program.cs dove vi erano inserite tutte le classi necessarie ( Record, Label e Arguments ), tuttavia per migliorare la leggibilità del codice
+sono state divise e in questo momento ogni classe ha il suo file ( Program.cs, Record.cs, Label.cs e Arguments.cs ), un'altra cosa da notare e l'uso dell'istruzione "namespace" questa istruzione fa capire
+che questi file provengono/appartengo allo stesso progetto e che quindi si può omettere.
+
+Ora andiamo più a fondo e spieghiamo il funzionamento di ogni singola classe a partire da Program.cs:
+
+PROGRAM.CS
+
+Questa è la classe che ospita il Main, il Main ha come parametro un array di stringhe, questo array verrà usato più avanti e servirà a determinare vari aspetti del nostro programma, ad esempio nel nostro array
+di stringhe si può specificare l'ip della stampante a cui ci si vuole collegare, la cartella in cui si trova il file di input, la cartella in cui si vuole salvare il file di output, il reparto che si vuole far
+stampare alla stampante o anche l'anno specifico che si vuole far stampare alla stampante.
+Dentro il Main vediamo che la prima istruzione è una variabile che si chiama config, questo Oggetto di tipo CsvConfiguration definisci le opzioni che il nostro file .csv ha, nel mio caso ho meso che il file 
+.csv non ha un Record Header, non contiene commenti, e che il delimitatore è ";".
+Successivamente vediamo che ho tre variabili inizializzate a "null" questo perchè dobbiamo prevedere il caso in cui l'utente sbagli a scrivere il nome di una cartella ( sia di input che di output),
+infatti, l'istruzione successiva è un blocco try/cath questo blocco serve ad intercettare l'Eccezione di IO ( System.IO.IOException ), nel mio caso nel momento in cui ci sia un eccezione IO 
+il programma stampa con Console.WriteLine() il messaggio "Directory non esistente o errata" e termina con il codice di errore -1.
+A questo punto se il programma non rileva nessuna eccezione allora istanzia una variabile di tipo IEnumerable<T> ( Dove T è la classe Record ) uguale al ritorno del metodo getRecords<T>(), questo metodo
+restituisce un interfaccia che supporta l'iterazione dei suoi Oggetti, successivamente si istanzia una lista vuota di Record, a seguire viene usato un ciclo foreach che serve per aggiungere ogni Record
+della variabile interfaccia alla lista.
+Infine ci sono le due ultime istruzioni, la prima crea un oggetto di tipo Label che come parametro richede una stringa ( ip della stampante), questa stringa viene ritornata del metodo .getValue("-IP"), questo
+metodo appartiene ad un'oggetto di tipo Arguments, semplicemente quello che fa questo metodo e prender come parametro una stringa chiamata chiave e restituire il valore associato a questa stringa ( Ne parleremo 
+più dettagliatamente dopo ), mentre la seconda chiama un metodo void chiamato .stampaEtichette(), questo metodo richede come parametri un'oggetto Argumens,  un'oggetto StreamWriter e una lista di Record, questo
+metodo appartiene alla classe Label è il metodo più importante del progetto perchè si occupa sia di scrivere le etichette in un file di testo che di stampare nella stampante PCM43c.
+
+RECORD.CS
+
+Questa classe record rappresenta in forma di codice i Record contenuti nel file .csv, infatti come scritto nella documentazione GitHub di CsvHelper i dati di un file .csv possono esere rapresentati come un
+oggetto, in questo caso un oggetto di tipo Record ha 6 parametri di classe:
+
+- CodiceAzienda
+- annodiProduzione : anno di produzione del Record in formato aaaa
+- reparto : reparto di produzione del Record
+- cespite : Numero del Pc del Record
+- numeroDiEtichette : Numero di etichette da stampare
+- annodiProduzione : anno di produzione del Record in formato aaaa-mm-gg 00:00:00.000
+
+Con queste sei variabile diamo in grado di ottenere un oggetto di tipo record, inoltre la classe ci mette a disposizione due metodi, il primo è il metodo getCodice(), questo metodo ritorna una stringa che
+rapresenza il Record, mentre il secondo è il metodo toString(), questo metodo ritorna la versione in formato stringa del Record in un formato che possa essere riconosciuto dalla stampante.
+
+LABEL.CS
+
+Questa come già detto è la una delle classi più importanti del progetto poichè si occupa sia di scrivere i Record su un file di testo che di stampare i Record nella stampante PCM43c, questa classe come
+parametri di classe un stringa chiamata ip, un intero chiamato port e un ogetto Socket gia istanziato con i seguenti parametri (AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp),
+il primo parametro per il socket specifica che deve usare un ip versione 4 ( indirizzi a 32 bit, 4 otteti ), la seconda specifica che il socket supporta connessioni da entrambe le parti ( la stampante
+potrebbe mandare byte[] al pc e viceversa ) e infine il terzo parametro indica il tipo di protocollo usato cioe Il Tranmission Contol Protocol.
+Il costruttore di Label richede solo un parametro di tipo stringa, questa stringa rappresenta l'ip della stampante, esso viene inserito da argomento sulla console, infatti, nel file Program.cs quando 
+creiamo l'oggetto Label per passargli il parametro usiamo il metodo getValue("-IP") per farci ritornare il valore della chiave -IP.
+Successivamente c'è il metodo stampaEtichetta(*params*) questo metodo richede come parametri un'oggetto Argumens,  un'oggetto StreamWriter e una lista di Record, il metodo definiche 2 variabili di tipo
+stringa prec e valoreEtichetta, la prima variabile serve per ricordare il reparto dell'etichetta precedente ( usata nel caso di un cambio reparto ) mentre la seconda stringa serve per specificare allo
+StreamWriter che cosa scrivere sul file di Output. Subito dopo c'è un ciclo foreach che ha il compito di scorrere tutta la lista, in questo foreach viene definita una variabile booleana chiama etichettadaStampare
+che determina se una etichetta debba essere stampata sulla PCM43c mentre la seconda variabile viene inizializzata, infatti valoreEtichetta è uguake a "", in questo modo ogni volta che cambia Record il valore
+dell'etichetta verrà ripristinato. Continuando il metodo vediamo il nostro primo if, questo if serve a controllare se al cambio di un Record è cambiato anche il suo reparto, nel caso in cui la condizione
+venga soddisfatta allora la variabile valoreEtichetta avrà il valore del metodo stampaEtichettaReparto(*param*) + "\n" + Record.toString(), in breve se il reparto cambia allora il valore dell'etichetta deve
+essere diverso poiche deve stampare sia un stringa speciale che deve essere riconosciuta dalla stampante che il Record.toString(). Successivamente c'è un blocco di if/else che è necessario affinche le
+etichette che vengono mandate alla stampante PCM43c siano quelle richeste dai parametri dell'utente ( inseriti dalla console ), in questi if viene anche assegnato alla varibile etichettaDaStampare il valore di true, 
+infine dopo aver passato il blocco di if/else abbiamo un altro if che controlla se valoreEtichetta sia diverso da "" e se etichettaDaStampare sia uguale a true, nel caso le condizioni siano soddisfatte il 
+metodo transofrma la stringa valoreEtichetta in un array di byte grazie al metodo ( Encoding.ASCII.GetBytes(string) ) e lo mando alla stampante grazie al metodo dell'oggetto socket .Send(*param*) che richede
+come parametro un array di byte.
+Come accennato precedentemente c'è anche il metodo stampaEtichettaReparto(*param*) che come parametro richede un Record, questo metodo ritorna una stringa formattata in modo che possa essere riconosciuta
+dalla stampante di etichette.
+
+
+
+
+ARGUMENTS.CS
+
+Questa è una classe molto semplice infatti ha solo un parametro di classe che non è altro che un dizionario di tipo Dictonary<string, string> questo dizionario è molto utile poichè ci rende in grado di
+abbinare una chiave ad un valore, infatti se vediamo gli argomenti della console che abbiamo inserito sono nel formato "-chiave valore" in questo modo possiamo facimente assegnare una chiave ad un valore,
+infatti il primo metodo è il costruttore, il costruttore prende come parametri un array di stringhe ( quello del Main ), trasforma la chiave in tutti caratteri Maiuscoli e 
+lo assegna al dizionario tramite un ciclo for, questo ciclo:
+
+for (int i = 0; i < args.Length; i = i + 2)
+{
+   argomenti.Add(args[i].ToUpper(), args[i + 1]);
+}
+
+Il secondo meteodo invece si chiama getValue() questo metodo richede come parametro una stringa chiamata chiave e se viene trovata nel dizionario ( tramite il metodo
+ContainsKey(string) ) allora il metodo restituisce il valore associato alla chiave, se la chiave non viene trovata allora il metodo ritornerà "" ( stringa vuota );
+
+
+VERSIONE 3.0 ( Descrizione funzionamento del progetto )
+
+Questo progetto ha come obbiettivo quello di stampare o scrivere delle etichette su un file di testo o su un device fisico ( stampante termica ), il programma lascia scelta all'utente su dove salvare
+il file di output e su quale file .csv scegliere com input, in alternativa il programma può essere connesso ad un database per eseguire una query e farsi restituire le etichette desiderate.
+Per dare la possibilità all'utente di modificare il comportamento del programma usiamo i parametri inseriti da console, questi parametri vengono gestiti dalla classe Arguments che elabora gli argomenti
+e li memorizza in un contenitore in forma di chiave valore, per adesso esistono questi parametri per la console:
+
+-output	: Crea il file di output nella cartella specificata
+-input	: Indica la cartella in cui risiede il file di input .csv
+-src	: Indica se l'utente vuole stampare le etichette connettendosi ad un database o se vuole scrivere i dati in un file di testo usando un file excel come input
+-rep	: Specifica ad una Query o allo scrittore di flusso se l'utente vuole stampare un delle etichette con un reparto specifico
+-anno	: Specifica ad una Query o allo scrittore di flusso se l'utente vuole stampare un delle etichette con un anno specifico
+
+Oviamente l'utente può scegliere di non usare alcuni parametri, ad esempio se l'utente omette il file di output il programma automaticamente lo salvera automaticamente su AssetLabel\CSV, anche
+parametri come -rep e -anno si possono omettere ( se l'utente non mette -rep verrano stampate tutte le etichette dell'anno -anno, mentre se manca -anno verrano stampate tutte le etichette del 
+reparto -rep, se mancano entrambe i parametri invece verranno stampate tutte le etichette disponibili, infine se ci sono entrambi i parametri verranno stampati/scritte le etichette del reparto -rep e
+e dell'anno -anno). Un parametro che invece non si può omettere è il parametro input, se il parametro input non sara valido il programma non andrà a buon fine.
+

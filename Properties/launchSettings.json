@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AssetLabel": {
+      "commandName": "Project",
+      "commandLineArgs": "-ip 172.20.137.142 -input C:\\Users\\stage1\\Source\\Repos\\AssetLabel\\CSV\\AssetList_2020-2021-2022.csv -out C:\\Users\\stage1\\Source\\Repos\\AssetLabel\\CSV -anno 2022 -rep 0020 -src Db"
+    }
+  }
+}
